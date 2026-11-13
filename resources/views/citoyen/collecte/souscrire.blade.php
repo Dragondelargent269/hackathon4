@@ -51,8 +51,8 @@
 
         <fieldset class="space-y-5">
             <legend class="text-lg font-semibold">3. Paiement mobile</legend>
-            <x-cc.champ label="Numéro de téléphone pour le paiement" pour="telephone" requis aide="Ex. : +2693212345. L'agent pourra aussi vous appeler avant son passage.">
-                <input id="telephone" name="telephone" type="tel" inputmode="tel" autocomplete="tel" required class="cc-input" value="{{ old('telephone', $utilisateur->telephone) }}" aria-describedby="telephone-aide" @error('telephone') aria-invalid="true" @enderror>
+            <x-cc.champ label="Numéro de téléphone pour le paiement" pour="telephone" requis aide="Numéro comorien, ex. : 321 00 11. L'agent pourra aussi vous appeler avant son passage.">
+                <x-cc.telephone requis :value="old('telephone', \App\Support\Telephone::afficher($utilisateur->telephone))" />
             </x-cc.champ>
             <div class="rounded-xl bg-sable-100 p-4 text-sm">
                 <p class="flex justify-between gap-4"><span>Formule {{ $formule->nom }}</span><strong class="tabular-nums">{{ number_format($formule->prix, 0, ',', ' ') }} KMF</strong></p>

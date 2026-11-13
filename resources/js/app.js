@@ -323,6 +323,51 @@ document.addEventListener('change', (e) => {
     if (champ) champ.form.requestSubmit();
 });
 
+/* --------------------------------------------------------------------------
+   7. Téléphone comorien  [data-telephone]
+   Mêmes règles que App\Support\Telephone (le serveur revalide toujours).
+   -------------------------------------------------------------------------- */
+const TEL_VALIDE = /^\+269[347][0-9]{6}$/;
+function normaliserTelephone(saisie) {
+    const s = saisie.trim();
+    if (!s || !/^\+?[0-9 .-]+$/.test(s)) return s;
+    let chiffres = s.replace(/\D/g, '');
+    const international = s.startsWith('+') || chiffres.startsWith('00');
+    chiffres = chiffres.replace(/^00/, '');
+    if (chiffres.length === 7 && !international) return `+269${chiffres}`;
+    if (chiffres.length === 10 && chiffres.startsWith('269')) return `+${chiffres}`;
+    return (international ? '+' : '') + chiffres;
+}
+// Pendant la frappe (et au collage) : on retire lettres et symboles ; « + » seulement en premier
+document.addEventListener('input', (e) => {
+    const champ = e.target.closest('input[data-telephone]');
+    if (!champ) return;
+    const propre = champ.value.replace(/[^0-9+ .-]/g, '').replace(/(?!^)\+/g, '');
+    if (propre !== champ.value) {
+        const pos = Math.max(0, champ.selectionStart - (champ.value.length - propre.length));
+        champ.value = propre;
+        champ.setSelectionRange(pos, pos);
+    }
+});
+// À la sortie du champ : message clair si le format n'est pas comorien
+document.addEventListener('focusout', (e) => {
+    const champ = e.target.closest('input[data-telephone]');
+    if (!champ) return;
+    const message = document.getElementById(`${champ.id}-format`);
+    const vide = champ.value.trim() === '';
+    const ok = vide || TEL_VALIDE.test(normaliserTelephone(champ.value));
+    champ.setCustomValidity(ok ? '' : 'Numéro comorien attendu : 7 chiffres commençant par 3, 4 ou 7.');
+    if (ok) champ.removeAttribute('aria-invalid');
+    else champ.setAttribute('aria-invalid', 'true');
+    if (message) {
+        message.hidden = ok;
+        message.textContent = ok ? '' : 'Numéro invalide : 7 chiffres commençant par 3, 4 ou 7 (ex. : 321 00 11 ou +269 321 00 11).';
+        const decrit = new Set((champ.getAttribute('aria-describedby') || '').split(' ').filter(Boolean));
+        ok ? decrit.delete(message.id) : decrit.add(message.id);
+        champ.setAttribute('aria-describedby', [...decrit].join(' '));
+    }
+});
+
 /* -------------------------------------------------------------------------- */
 function init() {
     $$('form[data-etapes]').forEach(initEtapes);

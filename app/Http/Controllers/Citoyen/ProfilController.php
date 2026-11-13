@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Citoyen;
 
 use App\Http\Controllers\Controller;
+use App\Rules\TelephoneComores;
+use App\Support\Telephone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -24,14 +26,14 @@ class ProfilController extends Controller
         $zones = config('cleancomores.zones');
 
         $request->merge([
-            'telephone' => preg_replace('/\s+/', '', (string) $request->input('telephone')) ?: null,
+            'telephone' => Telephone::normaliser($request->input('telephone')),
             'email' => trim((string) $request->input('email')) ?: null,
         ]);
 
         $donnees = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'required_without:telephone', 'email', 'max:191', Rule::unique('users')->ignore($user->id)],
-            'telephone' => ['nullable', 'required_without:email', 'regex:/^\+?[0-9]{7,15}$/', Rule::unique('users')->ignore($user->id)],
+            'telephone' => ['nullable', 'required_without:email', new TelephoneComores, Rule::unique('users')->ignore($user->id)],
             'commune' => ['required', Rule::in(collect($zones)->pluck('communes')->flatten()->all())],
         ]);
 

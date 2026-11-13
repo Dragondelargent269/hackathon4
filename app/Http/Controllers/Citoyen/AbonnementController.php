@@ -7,7 +7,9 @@ use App\Models\Abonnement;
 use App\Models\Collecte;
 use App\Models\Formule;
 use App\Models\Paiement;
+use App\Rules\TelephoneComores;
 use App\Services\Paiement\PasserelleMobile;
+use App\Support\Telephone;
 use DomainException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -47,7 +49,7 @@ class AbonnementController extends Controller
     {
         abort_unless($formule->active, 404);
 
-        $request->merge(['telephone' => preg_replace('/\s+/', '', (string) $request->input('telephone'))]);
+        $request->merge(['telephone' => Telephone::normaliser($request->input('telephone'))]);
         $donnees = $request->validate($this->regles(), [
             'latitude.required' => 'Indiquez la position de votre domicile sur la carte (ou utilisez « Me localiser »).',
             'longitude.required' => 'Indiquez la position de votre domicile sur la carte (ou utilisez « Me localiser »).',
@@ -143,7 +145,7 @@ class AbonnementController extends Controller
             'repere' => ['nullable', 'string', 'max:255'],
             'latitude' => ['required', 'numeric', 'between:-12.5,-11.3'],
             'longitude' => ['required', 'numeric', 'between:43.1,44.6'],
-            'telephone' => ['required', 'regex:/^\+?[0-9]{7,15}$/'],
+            'telephone' => ['required', new TelephoneComores],
             'conditions' => ['accepted'],
         ];
     }

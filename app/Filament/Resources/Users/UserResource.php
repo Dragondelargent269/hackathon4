@@ -4,7 +4,10 @@ namespace App\Filament\Resources\Users;
 
 use App\Filament\Resources\Users\Pages\ManageUsers;
 use App\Models\User;
+use App\Rules\TelephoneComores;
+use App\Support\Telephone;
 use BackedEnum;
+use Closure;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
@@ -54,8 +57,16 @@ class UserResource extends Resource
                     ->disabled(fn (?User $record) => $record?->is(auth()->user())),
                 TextInput::make('email')->label('E-mail')->email()->maxLength(191)
                     ->unique(ignoreRecord: true)->requiredWithout('telephone'),
-                TextInput::make('telephone')->label('Téléphone')->tel()->regex('/^\+?[0-9]{7,15}$/')
-                    ->unique(ignoreRecord: true)->requiredWithout('email'),
+                TextInput::make('telephone')->label('Téléphone')->tel()->maxLength(Telephone::LONGUEUR_MAX)
+                    ->placeholder('+269 321 00 11')->helperText('Numéro comorien : 7 chiffres commençant par 3, 4 ou 7.')
+                    ->requiredWithout('email')
+                    ->rule(new TelephoneComores)
+                    // Doublon vérifié sur la forme normalisée (+269XXXXXXX), comme en base
+                    ->rule(fn (?User $record) => function (string $attribute, $value, Closure $fail) use ($record) {
+                        if (filled($value) && User::where('telephone', Telephone::normaliser($value))->when($record, fn ($q) => $q->whereKeyNot($record->id))->exists()) {
+                            $fail('Ce numéro de téléphone est déjà utilisé.');
+                        }
+                    }),
                 Select::make('commune')->label('Commune')->options($communes)->searchable(),
                 TextInput::make('password')->label('Mot de passe')->password()->revealable()
                     ->rule(Password::default())

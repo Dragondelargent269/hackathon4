@@ -2,11 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Priorite;
 use App\Enums\StatutSignalement;
 use App\Models\User;
+use App\Support\Telephone;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
-use App\Enums\Priorite;
 
 class DemoSeeder extends Seeder
 {
@@ -77,7 +78,7 @@ class DemoSeeder extends Seeder
                 switch ($etape) {
                     case 'valide':
                         $s->priorite = $prio;
-                        $commentaire = 'Priorité définie : ' . Priorite::from($prio)->getLabel() . '.';
+                        $commentaire = 'Priorité définie : '.Priorite::from($prio)->getLabel().'.';
                         break;
                     case 'affecte':
                         $s->agent_id = $agent->id;
@@ -117,7 +118,7 @@ class DemoSeeder extends Seeder
             'role' => $role,
             'commune' => $commune,
             'zone' => $zone,
-            'telephone' => $telephone,
+            'telephone' => Telephone::normaliser($telephone),
             'email_verified_at' => now(),
         ])->save();
 

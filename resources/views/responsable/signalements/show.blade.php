@@ -54,6 +54,17 @@
                 </x-cc.bloc>
             @elseif (in_array($s->statut, ['valide', 'affecte']))
                 <x-cc.bloc :titre="$s->statut === 'valide' ? 'Affecter à un agent' : 'Réaffecter la mission'" description="Choisissez un agent disponible et précisez vos consignes.">
+                    @if (collect($agents)->isEmpty())
+                        {{-- Aucun compte avec le rôle « agent » : l'inscription publique crée uniquement des citoyens --}}
+                        <x-cc.alerte type="attention" titre="Aucun agent de terrain enregistré">
+                            Aucun compte n'a le rôle « Agent de terrain ». Les inscriptions du site créent uniquement des comptes citoyens :
+                            les agents sont créés par un responsable dans l'administration.
+                        </x-cc.alerte>
+                        <x-cc.bouton class="mt-4" :href="url('/admin/users')" icone="users">Créer ou nommer un agent</x-cc.bouton>
+                    @else
+                    @if (collect($agents)->every(fn ($a) => ! $a->disponible))
+                        <x-cc.alerte type="attention" class="mb-4">Tous les agents ont déjà 3 missions en cours. Attendez qu'une mission se termine ou nommez un autre agent dans l'<a href="{{ url('/admin/users') }}" class="font-medium underline">administration</a>.</x-cc.alerte>
+                    @endif
                     <form id="form-affecter" method="POST" action="{{ route('responsable.signalements.affecter', $s->id) }}" data-confirmer="dialogue-affecter" class="space-y-4">
                         @csrf
                         <x-cc.champ label="Agent de terrain" pour="agent_id" requis>
@@ -61,7 +72,7 @@
                                 <option value="">Choisir un agent…</option>
                                 @foreach ($agents as $a)
                                     <option value="{{ $a->id }}" @disabled(! $a->disponible) @selected(old('agent_id', $s->agent?->id) == $a->id)>
-                                        {{ $a->name }} — {{ config('cleancomores.zones.'.$a->zone.'.label') }} · {{ $a->missions_en_cours }} mission(s){{ $a->disponible ? '' : ' · indisponible' }}
+                                        {{ $a->name }} — {{ ($a->zone ? config('cleancomores.zones.'.$a->zone.'.label') : null) ?? $a->commune ?? 'zone non renseignée' }} ·{{ $a->missions_en_cours }} mission(s){{ $a->disponible ? '' : ' · indisponible' }}
                                     </option>
                                 @endforeach
                             </select>
@@ -71,6 +82,7 @@
                         </x-cc.champ>
                         <x-cc.bouton type="submit" icone="user" class="max-sm:w-full">{{ $s->statut === 'valide' ? 'Affecter la mission' : 'Réaffecter' }}</x-cc.bouton>
                     </form>
+                    @endif
                 </x-cc.bloc>
             @elseif ($s->statut === 'resolu')
                 <x-cc.bloc titre="Valider la résolution" description="L'agent a transmis la fin d'intervention. Contrôlez le compte rendu." class="border-teal-300 ring-1 ring-teal-200">

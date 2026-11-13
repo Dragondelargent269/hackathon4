@@ -3,6 +3,8 @@
 namespace App\Actions\Fortify;
 
 use App\Models\User;
+use App\Rules\TelephoneComores;
+use App\Support\Telephone;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -12,8 +14,8 @@ class CreateNewUser implements CreatesNewUsers
 {
     public function create(array $input): User
     {
-        // Normalisation : "+269 321 00 11" devient "+2693210011" ; un champ vide devient null
-        $input['telephone'] = preg_replace('/\s+/', '', (string) ($input['telephone'] ?? '')) ?: null;
+        // Normalisation : "321 00 11" ou "+269 321 00 11" devient "+2693210011" ; un champ vide devient null
+        $input['telephone'] = Telephone::normaliser($input['telephone'] ?? null);
         $input['email'] = trim((string) ($input['email'] ?? '')) ?: null;
 
         $zones = config('cleancomores.zones');
@@ -22,7 +24,7 @@ class CreateNewUser implements CreatesNewUsers
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'required_without:telephone', 'email', 'max:191', Rule::unique(User::class)],
-            'telephone' => ['nullable', 'required_without:email', 'regex:/^\+?[0-9]{7,15}$/', Rule::unique(User::class)],
+            'telephone' => ['nullable', 'required_without:email', new TelephoneComores, Rule::unique(User::class)],
             'commune' => ['required', Rule::in($communes)],
             'password' => ['required', 'string', Password::defaults(), 'confirmed'],
             'conditions' => ['accepted'],

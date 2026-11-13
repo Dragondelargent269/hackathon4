@@ -4,16 +4,17 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Models\User;
+use App\Support\Telephone;
 use Illuminate\Auth\Middleware\RequirePassword;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Fortify;
 use Livewire\Livewire;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -34,13 +35,13 @@ class FortifyServiceProvider extends ServiceProvider
         $this->configureViews();
         $this->configureRateLimiting();
         $this->configurePasswordConfirmation();
-                // --- CleanComores : vues de l'équipe front + connexion par e-mail OU téléphone
+        // --- CleanComores : vues de l'équipe front + connexion par e-mail OU téléphone
         Fortify::loginView(fn () => view('auth.connexion'));
         Fortify::registerView(fn () => view('auth.inscription'));
 
         Fortify::authenticateUsing(function (Request $request) {
             $identifiant = trim((string) $request->input('identifiant'));
-            $telephone = preg_replace('/\s+/', '', $identifiant);
+            $telephone = Telephone::normaliser($identifiant);
 
             $user = User::query()
                 ->where('email', $identifiant)

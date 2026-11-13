@@ -11,8 +11,8 @@
                 <x-cc.champ label="Nom complet" pour="name" requis class="sm:col-span-2">
                     <input id="name" name="name" class="cc-input" required autocomplete="name" value="{{ old('name', $u->name) }}">
                 </x-cc.champ>
-                <x-cc.champ label="Téléphone" pour="telephone">
-                    <input id="telephone" name="telephone" type="tel" class="cc-input" autocomplete="tel" value="{{ old('telephone', $u->telephone) }}">
+                <x-cc.champ label="Téléphone" pour="telephone" aide="7 chiffres commençant par 3, 4 ou 7, avec ou sans +269. Ex. : 321 00 11.">
+                    <x-cc.telephone :value="old('telephone', \App\Support\Telephone::afficher($u->telephone))" />
                 </x-cc.champ>
                 <x-cc.champ label="E-mail" pour="email">
                     <input id="email" name="email" type="email" class="cc-input" autocomplete="email" value="{{ old('email', $u->email) }}">

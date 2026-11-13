@@ -17,9 +17,8 @@
 
                 <fieldset class="space-y-4 rounded-xl border border-zinc-200 p-4">
                     <legend class="px-1 text-sm font-medium text-zinc-900">Comment vous joindre ? <span class="font-normal text-zinc-600">— au moins l'un des deux</span></legend>
-                    <x-cc.champ label="Numéro de téléphone" pour="telephone">
-                        <input id="telephone" name="telephone" type="tel" class="cc-input" autocomplete="tel" inputmode="tel" placeholder="+269 3xx xx xx" value="{{ old('telephone') }}"
-                               @error('telephone') aria-invalid="true" aria-describedby="telephone-erreur" @enderror>
+                    <x-cc.champ label="Numéro de téléphone" pour="telephone" aide="7 chiffres commençant par 3, 4 ou 7, avec ou sans +269. Ex. : 321 00 11.">
+                        <x-cc.telephone :value="old('telephone')" />
                     </x-cc.champ>
                     <x-cc.champ label="Adresse e-mail" pour="email" aide="Nécessaire pour recevoir les notifications par e-mail.">
                         <input id="email" name="email" type="email" class="cc-input" autocomplete="email" value="{{ old('email') }}"
