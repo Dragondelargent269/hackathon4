@@ -1,0 +1,59 @@
+[1mdiff --git a/config/fortify.php b/config/fortify.php[m
+[1mindex 086787f..cedebce 100644[m
+[1m--- a/config/fortify.php[m
+[1m+++ b/config/fortify.php[m
+[36m@@ -116,12 +116,8 @@[m
+ [m
+     'limiters' => [[m
+         'login' => 'login',[m
+[31m-        /* @chisel-2fa */[m
+         'two-factor' => 'two-factor',[m
+[31m-        /* @end-chisel-2fa */[m
+[31m-        /* @chisel-passkeys */[m
+         'passkeys' => 'passkeys',[m
+[31m-        /* @end-chisel-passkeys */[m
+     ],[m
+ [m
+     /*[m
+[36m@@ -137,7 +133,6 @@[m
+ [m
+     'views' => true,[m
+ [m
+[31m-    /* @chisel-passkeys */[m
+     /*[m
+     |--------------------------------------------------------------------------[m
+     | Passkeys[m
+[36m@@ -153,7 +148,6 @@[m
+         'user_handle_secret' => env('PASSKEYS_USER_HANDLE_SECRET', config('app.key')),[m
+         'timeout' => 60000,[m
+     ],[m
+[31m-    /* @end-chisel-passkeys */[m
+ [m
+     /*[m
+     |--------------------------------------------------------------------------[m
+[36m@@ -167,25 +161,17 @@[m
+     */[m
+ [m
+     'features' => [[m
+[31m-        /* @chisel-registration */[m
+         Features::registration(),[m
+[31m-        /* @end-chisel-registration */[m
+         Features::resetPasswords(),[m
+[31m-        /* @chisel-email-verification */[m
+         Features::emailVerification(),[m
+[31m-        /* @end-chisel-email-verification */[m
+[31m-        /* @chisel-2fa */[m
+         Features::twoFactorAuthentication([[m
+             'confirm' => true,[m
+             'confirmPassword' => true,[m
+             // 'window' => 0[m
+         ]),[m
+[31m-        /* @end-chisel-2fa */[m
+[31m-        /* @chisel-passkeys */[m
+         Features::passkeys([[m
+             'confirmPassword' => true,[m
+         ]),[m
+[31m-        /* @end-chisel-passkeys */[m
+     ],[m
+ [m
+ ];[m
