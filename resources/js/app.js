@@ -209,11 +209,7 @@ function chargerLeaflet() {
     return leafletPromesse;
 }
 
-const COULEURS_STATUT = {
-    nouveau: '#64748b', a_verifier: '#d97706', valide: '#0284c7', affecte: '#7c3aed',
-    en_cours: '#ea580c', resolu: '#0d9488', verifie: '#047857', rejete: '#dc2626',
-};
-
+// Les couleurs viennent de config/cleancomores.php (marqueurs / types_points) via <x-cc.carte>
 const echapper = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 function initCarte(el) {
@@ -230,11 +226,24 @@ function initCarte(el) {
         }).addTo(carte);
 
         const marqueurs = points.filter((p) => p.lat && p.lng).map((p) => {
-            const m = L.circleMarker([p.lat, p.lng], {
-                radius: 9, weight: 2, color: '#ffffff', fillColor: COULEURS_STATUT[p.statut] || '#0a7661', fillOpacity: 1,
-            }).addTo(carte);
-            const lien = p.url ? `<br><a href="${echapper(p.url)}">Ouvrir le dossier</a>` : '';
-            m.bindPopup(`<strong>${echapper(p.titre)}</strong>${p.statutLabel ? `<br>Statut : ${echapper(p.statutLabel)}` : ''}${lien}`);
+            const couleur = p.couleur || '#0a7661';
+            // Signalement : rond (rouge clignotant si non traité) ; autres types : carré
+            const m = p.type === 'signalement'
+                ? L.circleMarker([p.lat, p.lng], {
+                    radius: 9, weight: 2, color: '#ffffff', fillColor: couleur, fillOpacity: 1,
+                    className: p.clignote ? 'cc-clignote' : '',
+                })
+                : L.marker([p.lat, p.lng], {
+                    icon: L.divIcon({ className: 'cc-pin-carre', html: `<span style="background:${couleur}"></span>`, iconSize: [20, 20], iconAnchor: [10, 10] }),
+                    keyboard: true, title: p.titre,
+                });
+            m.addTo(carte);
+            const lignes = [`<strong>${echapper(p.titre)}</strong>`];
+            if (p.typeLabel) lignes.push(`<span class="cc-popup-type">${echapper(p.typeLabel)}</span>`);
+            if (p.statutLabel) lignes.push(`Statut : ${echapper(p.statutLabel)}`);
+            if (p.details) lignes.push(echapper(p.details));
+            if (p.url) lignes.push(`<a href="${echapper(p.url)}">${echapper(p.lien || 'Ouvrir le dossier')}</a>`);
+            m.bindPopup(lignes.join('<br>'));
             return m;
         });
         if (marqueurs.length > 1) carte.fitBounds(L.featureGroup(marqueurs).getBounds().pad(0.2));

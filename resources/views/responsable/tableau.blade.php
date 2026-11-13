@@ -40,12 +40,8 @@
             </x-cc.bloc>
 
             <x-cc.bloc titre="Carte des dossiers ouverts" flush>
-                <x-cc.carte class="rounded-none border-0" hauteur="h-80" :points="collect($carte)->map(fn ($s) => ['lat' => $s->latitude, 'lng' => $s->longitude, 'titre' => $s->reference.' — '.$s->commune, 'statut' => $s->statut, 'url' => route('responsable.signalements.show', $s->id)])" label="Carte des dossiers ouverts" />
-                <ul class="flex flex-wrap gap-2 border-t border-zinc-100 p-3 text-xs" aria-label="Légende de la carte">
-                    @foreach (['nouveau', 'a_verifier', 'valide', 'affecte', 'en_cours', 'resolu'] as $st)
-                        <li><x-cc.statut :statut="$st" taille="sm" /></li>
-                    @endforeach
-                </ul>
+                <x-cc.carte class="rounded-none border-0" hauteur="h-80" :points="collect($carte)->map(fn ($s) => ['lat' => $s->latitude, 'lng' => $s->longitude, 'titre' => $s->reference.' — '.$s->commune, 'statut' => $s->statut, 'url' => route('responsable.signalements.show', $s->id)])" label="Carte des dossiers ouverts" legende />
+                <div class="border-t border-zinc-100 px-3 py-2 text-right text-sm"><a href="{{ route('responsable.carte') }}" class="font-medium text-lagon-800 hover:underline">Ouvrir la carte complète →</a></div>
             </x-cc.bloc>
         </div>
 

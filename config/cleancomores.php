@@ -99,4 +99,59 @@ return [
 
     // Centre de carte par défaut (archipel)
     'carte' => ['lat' => -11.95, 'lng' => 43.75, 'zoom' => 8],
+
+    // Couleur des marqueurs de signalement sur la carte (4 groupes de statuts)
+    'marqueurs' => [
+        'non_traite' => ['label' => 'Non traité', 'couleur' => '#dc2626', 'clignote' => true, 'statuts' => ['nouveau', 'a_verifier', 'valide']],
+        'en_cours' => ['label' => 'Intervention prévue ou en cours', 'couleur' => '#ea580c', 'clignote' => false, 'statuts' => ['affecte', 'en_cours']],
+        'resolu' => ['label' => 'Résolu', 'couleur' => '#16a34a', 'clignote' => false, 'statuts' => ['resolu']],
+        'clos' => ['label' => 'Clôturé ou rejeté', 'couleur' => '#71717a', 'clignote' => false, 'statuts' => ['verifie', 'rejete']],
+    ],
+
+    // Autres types de points affichés sur la carte (forme carrée)
+    'types_points' => [
+        'point_collecte' => ['label' => 'Point de collecte', 'couleur' => '#0f766e'],
+        'collecte_domicile' => ['label' => 'Collecte à domicile', 'couleur' => '#2563eb'],
+    ],
+
+    /*
+    |----------------------------------------------------------------------
+    | Collecte à domicile : abonnements, paiements, collectes
+    |----------------------------------------------------------------------
+    | Le signalement reste gratuit. Les formules (prix, durée, services)
+    | sont en base et se gèrent dans /admin, pas ici.
+    */
+    'abonnements' => [
+        'en_attente_paiement' => ['label' => 'En attente de paiement', 'classes' => 'bg-amber-50 text-amber-900 ring-amber-300'],
+        'actif' => ['label' => 'Actif', 'classes' => 'bg-emerald-50 text-emerald-900 ring-emerald-300'],
+        'epuise' => ['label' => 'Collectes épuisées', 'classes' => 'bg-zinc-100 text-zinc-800 ring-zinc-300'],
+        'expire' => ['label' => 'Expiré', 'classes' => 'bg-zinc-100 text-zinc-800 ring-zinc-300'],
+        'annule' => ['label' => 'Annulé', 'classes' => 'bg-red-50 text-red-900 ring-red-300'],
+    ],
+    'paiements' => [
+        'en_attente' => ['label' => 'En attente de confirmation', 'classes' => 'bg-amber-50 text-amber-900 ring-amber-300', 'icone' => 'clock'],
+        'confirme' => ['label' => 'Paiement confirmé', 'classes' => 'bg-emerald-50 text-emerald-900 ring-emerald-300', 'icone' => 'check-circle'],
+        'echoue' => ['label' => 'Paiement refusé', 'classes' => 'bg-red-50 text-red-900 ring-red-300', 'icone' => 'x-circle'],
+        'annule' => ['label' => 'Annulé', 'classes' => 'bg-zinc-100 text-zinc-800 ring-zinc-300', 'icone' => 'x-circle'],
+    ],
+    'collectes' => [
+        'demandee' => ['label' => 'Collecte demandée', 'classes' => 'bg-sky-50 text-sky-900 ring-sky-300'],
+        'effectuee' => ['label' => 'Collecte effectuée', 'classes' => 'bg-emerald-50 text-emerald-900 ring-emerald-300'],
+        'annulee' => ['label' => 'Annulée', 'classes' => 'bg-zinc-100 text-zinc-800 ring-zinc-300'],
+    ],
+    'creneaux' => [
+        'matin' => 'Matin (7 h – 12 h)',
+        'apres_midi' => 'Après-midi (12 h – 17 h)',
+        'indifferent' => 'Peu importe',
+    ],
+
+    // Passerelle de paiement mobile. Seule « simulation » existe pour l'instant :
+    // aucun argent réel ne circule, chaque paiement doit être confirmé par un responsable.
+    'paiement' => [
+        'passerelle' => env('PAIEMENT_PASSERELLE', 'simulation'),
+        'devise' => 'KMF',
+        'operateurs' => [
+            'simulation' => 'Simulation (démonstration, aucun argent réel)',
+        ],
+    ],
 ];

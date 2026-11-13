@@ -41,6 +41,11 @@
         'leaf' => 'M5 19C5 10 10 5 20 4c0 10-5 15-14 15zM5 19l7-7',
         'flag' => 'M5 21V4h11l-1.5 4L16 12H5',
         'pencil' => 'M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4',
+        'map' => 'M9 4 3 6v14l6-2 6 2 6-2V4l-6 2zM9 4v14m6-12v14',
+        'wallet' => 'M4 6h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4zM4 6V5a1 1 0 0 1 1-1h10v2M16 13h.01',
+        'receipt' => 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6M9 16h3',
+        'qr' => 'M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h2v2h-2zM18 18h2v2h-2zM14 18h2M18 14h2',
+        'printer' => 'M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z',
     ];
 @endphp
 <svg {{ $attributes->merge(['class' => $class]) }} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="{{ $paths[$name] ?? $paths['dots'] }}"/></svg>

@@ -7,6 +7,13 @@ use
 App\Http\Controllers\Citoyen\SignalementController as CitoyenSignalementController;
 use App\Http\Controllers\Responsable\SignalementController as ResponsableSignalementController;
 use App\Http\Controllers\Citoyen\ProfilController;
+use App\Http\Controllers\Citoyen\AbonnementController;
+use App\Http\Controllers\Citoyen\CarteController as CitoyenCarteController;
+use App\Http\Controllers\Citoyen\PaiementController as CitoyenPaiementController;
+use App\Http\Controllers\Responsable\CarteController as ResponsableCarteController;
+use App\Http\Controllers\Responsable\PaiementController as ResponsablePaiementController;
+use App\Http\Controllers\Agent\CollecteController;
+use App\Http\Controllers\Agent\RecuController;
 
 Route::view('/', 'accueil')->name('home');
 
@@ -63,6 +70,46 @@ Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->cont
     Route::post('/missions/{signalement}/terminer', 'terminer')->name('missions.terminer');
     Route::get('/historique', 'historique')->name('historique');
 });
+/* =====================================================================
+   Carte interactive + collecte à domicile (abonnements, paiements, reçus)
+   ===================================================================== */
+Route::middleware(['auth', 'role:citoyen'])->prefix('citoyen')->name('citoyen.')->group(function () {
+    Route::get('/carte', [CitoyenCarteController::class, 'index'])->name('carte');
+
+    Route::controller(AbonnementController::class)->prefix('collecte')->group(function () {
+        Route::get('/', 'index')->name('abonnements.index');
+        Route::get('/formules/{formule:slug}', 'create')->name('abonnements.create');
+        Route::post('/formules/{formule:slug}', 'store')->middleware('throttle:10,1')->name('abonnements.store');
+        Route::get('/abonnements/{abonnement}', 'show')->name('abonnements.show');
+        Route::post('/abonnements/{abonnement}/payer', 'payer')->middleware('throttle:10,1')->name('abonnements.payer');
+        Route::post('/abonnements/{abonnement}/collectes', 'demanderCollecte')->name('collectes.store');
+        Route::post('/collectes/{collecte}/annuler', 'annulerCollecte')->name('collectes.annuler');
+    });
+
+    Route::controller(CitoyenPaiementController::class)->prefix('collecte')->group(function () {
+        Route::get('/paiements', 'index')->name('paiements.index');
+        Route::get('/recus/{paiement:reference}', 'show')->name('paiements.show');
+        Route::post('/recus/{paiement:reference}/annuler', 'annuler')->name('paiements.annuler');
+    });
+});
+
+Route::middleware(['auth', 'role:responsable'])->prefix('responsable')->name('responsable.')->group(function () {
+    Route::get('/carte', [ResponsableCarteController::class, 'index'])->name('carte');
+    Route::get('/paiements', [ResponsablePaiementController::class, 'index'])->name('paiements.index');
+    Route::post('/paiements/{paiement}/confirmer', [ResponsablePaiementController::class, 'confirmer'])->name('paiements.confirmer');
+    Route::post('/paiements/{paiement}/refuser', [ResponsablePaiementController::class, 'refuser'])->name('paiements.refuser');
+});
+
+Route::middleware(['auth', 'role:agent'])->prefix('agent')->name('agent.')->group(function () {
+    Route::get('/collectes', [CollecteController::class, 'index'])->name('collectes.index');
+    Route::get('/collectes/effectuees', [CollecteController::class, 'historique'])->name('collectes.historique');
+    Route::get('/collectes/{collecte}', [CollecteController::class, 'show'])->name('collectes.show');
+    Route::post('/collectes/{collecte}/confirmer', [CollecteController::class, 'confirmer'])->name('collectes.confirmer');
+    Route::get('/recus', [RecuController::class, 'index'])->name('recus.index');
+    Route::get('/recus/{reference}', [RecuController::class, 'show'])->name('recus.show');
+    Route::post('/recus/{reference}/collecter', [RecuController::class, 'collecter'])->name('recus.collecter');
+});
+
 require __DIR__.'/settings.php';
 
 

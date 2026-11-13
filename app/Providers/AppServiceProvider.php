@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Paiement\PasserelleMobile;
+use App\Services\Paiement\SimulationPasserelle;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +18,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Paiement mobile : seule la simulation existe. Une vraie passerelle ne sera
+        // ajoutée qu'après validation de l'équipe (contrat marchand, clés d'API).
+        $this->app->bind(PasserelleMobile::class, fn () => match (config('cleancomores.paiement.passerelle')) {
+            'simulation' => new SimulationPasserelle,
+            default => throw new \RuntimeException('Passerelle de paiement inconnue : '.config('cleancomores.paiement.passerelle')),
+        });
     }
 
     /**

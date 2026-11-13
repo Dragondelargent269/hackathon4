@@ -116,4 +116,28 @@ class User extends Authenticatable implements FilamentUser, PasskeyUser
     {
         return $this->hasMany(Signalement::class, 'agent_id');
     }
+
+    /**
+     * Abonnements de collecte à domicile de ce citoyen.
+     */
+    public function abonnements(): HasMany
+    {
+        return $this->hasMany(Abonnement::class)->latest('id');
+    }
+
+    /**
+     * Paiements (reçus) de ce citoyen.
+     */
+    public function paiements(): HasMany
+    {
+        return $this->hasMany(Paiement::class)->latest('id');
+    }
+
+    /**
+     * Collectes à domicile effectuées par cet agent.
+     */
+    public function collectesEffectuees(): HasMany
+    {
+        return $this->hasMany(Collecte::class, 'agent_id');
+    }
 }

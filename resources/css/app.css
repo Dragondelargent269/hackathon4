@@ -105,6 +105,25 @@ dialog.cc-dialog::backdrop { background: rgb(9 9 11 / 0.55); }
 /* Étapes du formulaire : sans JS tout est visible, avec JS une étape à la fois */
 .js [data-etape][hidden] { display: none; }
 
+/* Carte : signalement non traité (rouge clignotant) et points carrés */
+@keyframes cc-clignote {
+    0%, 100% { fill-opacity: 1; stroke-width: 2; }
+    50% { fill-opacity: 0.25; stroke-width: 6; }
+}
+.cc-clignote { animation: cc-clignote 1.1s ease-in-out infinite; }
+.cc-pin-carre span {
+    display: block; width: 18px; height: 18px; border: 2px solid #fff; border-radius: 4px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.4);
+}
+.cc-popup-type { font-size: 0.75rem; color: #52525b; }
+
+/* Impression (reçu) : seul le contenu principal est imprimé */
+@media print {
+    .cc-body { background: #fff; }
+    .cc-body > div > aside, .cc-body > div > div > header, .cc-body > nav, [data-pas-imprimer] { display: none !important; }
+    .cc-body main { max-width: none; padding: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
 }

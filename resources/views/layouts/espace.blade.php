@@ -12,16 +12,22 @@
         'citoyen' => [
             ['route' => 'citoyen.signalements.index', 'actif' => 'citoyen.signalements.index|citoyen.signalements.show', 'label' => 'Mes signalements', 'court' => 'Signalements', 'icone' => 'list'],
             ['route' => 'citoyen.signalements.create', 'actif' => 'citoyen.signalements.create', 'label' => 'Signaler un problème', 'court' => 'Signaler', 'icone' => 'plus', 'cta' => true],
-            ['route' => 'citoyen.profil.edit', 'actif' => 'citoyen.profil.*', 'label' => 'Mon profil', 'court' => 'Profil', 'icone' => 'user'],
+            ['route' => 'citoyen.carte', 'actif' => 'citoyen.carte', 'label' => 'Carte', 'court' => 'Carte', 'icone' => 'map'],
+            ['route' => 'citoyen.abonnements.index', 'actif' => 'citoyen.abonnements.*|citoyen.paiements.*', 'label' => 'Collecte à domicile', 'court' => 'Collecte', 'icone' => 'truck'],
+            ['route' => 'citoyen.profil.edit', 'actif' => 'citoyen.profil.*', 'label' => 'Mon profil', 'court' => 'Profil', 'icone' => 'user', 'mobile' => false],
         ],
         'responsable' => [
             ['route' => 'responsable.tableau', 'actif' => 'responsable.tableau', 'label' => 'Vue d\'ensemble', 'court' => 'Accueil', 'icone' => 'home'],
             ['route' => 'responsable.signalements.index', 'actif' => 'responsable.signalements.*', 'label' => 'Signalements', 'court' => 'Dossiers', 'icone' => 'list'],
-            ['route' => 'responsable.statistiques', 'actif' => 'responsable.statistiques', 'label' => 'Statistiques', 'court' => 'Stats', 'icone' => 'chart'],
+            ['route' => 'responsable.carte', 'actif' => 'responsable.carte', 'label' => 'Carte', 'court' => 'Carte', 'icone' => 'map'],
+            ['route' => 'responsable.paiements.index', 'actif' => 'responsable.paiements.*', 'label' => 'Collecte et paiements', 'court' => 'Paiements', 'icone' => 'wallet'],
+            ['route' => 'responsable.statistiques', 'actif' => 'responsable.statistiques', 'label' => 'Statistiques', 'court' => 'Stats', 'icone' => 'chart', 'mobile' => false],
         ],
         'agent' => [
-            ['route' => 'agent.missions.index', 'actif' => 'agent.missions.*', 'label' => 'Mes missions', 'court' => 'Missions', 'icone' => 'truck'],
-            ['route' => 'agent.historique', 'actif' => 'agent.historique', 'label' => 'Historique', 'court' => 'Historique', 'icone' => 'clock'],
+            ['route' => 'agent.missions.index', 'actif' => 'agent.missions.*', 'label' => 'Mes missions', 'court' => 'Missions', 'icone' => 'flag'],
+            ['route' => 'agent.collectes.index', 'actif' => 'agent.collectes.index|agent.collectes.show', 'label' => 'Collectes à domicile', 'court' => 'Collectes', 'icone' => 'truck'],
+            ['route' => 'agent.recus.index', 'actif' => 'agent.recus.*', 'label' => 'Vérifier un reçu', 'court' => 'Reçu', 'icone' => 'qr'],
+            ['route' => 'agent.historique', 'actif' => 'agent.historique|agent.collectes.historique', 'label' => 'Historique', 'court' => 'Historique', 'icone' => 'clock'],
         ],
     ];
     $roles = ['citoyen' => 'Citoyen', 'responsable' => 'Responsable municipal', 'agent' => 'Agent de terrain'];
@@ -78,7 +84,16 @@
             {{-- Barre du haut (mobile) --}}
             <header class="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-zinc-200 bg-white/95 px-4 backdrop-blur lg:hidden">
                 <x-cc.logo />
-                <span class="rounded-full bg-lagon-50 px-2.5 py-1 text-xs font-medium text-lagon-800">{{ $roles[$role] ?? '' }}</span>
+                <div class="flex items-center gap-1">
+                    <span class="rounded-full bg-lagon-50 px-2.5 py-1 text-xs font-medium text-lagon-800">{{ $roles[$role] ?? '' }}</span>
+                    {{-- Liens absents de la barre d'onglets (place limitée) --}}
+                    @foreach (array_filter($nav, fn ($i) => ! ($i['mobile'] ?? true)) as $item)
+                        <a href="{{ route($item['route']) }}" @if ($estActif($item)) aria-current="page" @endif
+                           class="cc-touch grid place-items-center rounded-lg text-zinc-700 hover:bg-zinc-100 aria-[current=page]:text-lagon-800" aria-label="{{ $item['label'] }}">
+                            <x-cc.icon :name="$item['icone']" />
+                        </a>
+                    @endforeach
+                </div>
             </header>
 
             <main id="contenu" class="mx-auto w-full {{ $large ? 'max-w-7xl' : 'max-w-5xl' }} px-4 py-6 sm:px-6 lg:py-10">
@@ -93,7 +108,7 @@
     {{-- Barre d'onglets (mobile) --}}
     <nav class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-200 bg-white pb-[env(safe-area-inset-bottom)] lg:hidden" aria-label="Navigation principale">
         <ul class="mx-auto flex max-w-md justify-around">
-            @foreach ($nav as $item)
+            @foreach (array_filter($nav, fn ($i) => $i['mobile'] ?? true) as $item)
                 <li class="flex-1">
                     <a href="{{ route($item['route']) }}"
                        @if ($estActif($item)) aria-current="page" @endif
