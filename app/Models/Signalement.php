@@ -1,6 +1,9 @@
 <?php
 
 namespace App\Models;
+use App\Enums\Categorie;
+use App\Enums\Priorite;
+use App\Enums\StatutSignalement;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -39,9 +42,12 @@ class Signalement extends Model
     /**
      * Conversion automatique des types entre MySQL et PHP.
      */
-    protected function casts(): array
+        protected function casts(): array
     {
         return [
+            'categorie' => Categorie::class,
+            'statut' => StatutSignalement::class,
+            'priorite' => Priorite::class,
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'affecte_at' => 'datetime',
