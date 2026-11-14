@@ -14,3 +14,4 @@ require __DIR__.'/settings.php';
 if (! app()->isProduction()) {
     require __DIR__.'/maquette.php';
 }
+
