@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+
 
 class Signalement extends Model
 {
@@ -93,19 +93,19 @@ class Signalement extends Model
     // Attributs calculés attendus par les vues
     // ---------------------------------------------------------------
 
-    protected function photoUrl(): Attribute
+        protected function photoUrl(): Attribute
     {
         return Attribute::get(fn () => $this->photo
-            ? Storage::disk('public')->url($this->photo)
+            ? asset('storage/'.$this->photo)
             : null);
     }
 
-    protected function compteRendu(): Attribute
+      protected function compteRendu(): Attribute
     {
         return Attribute::get(fn (?string $value) => $value === null ? null : (object) [
             'texte' => $value,
             'photo_url' => $this->photo_resolution
-                ? Storage::disk('public')->url($this->photo_resolution)
+                ? asset('storage/'.$this->photo_resolution)
                 : null,
             'created_at' => $this->resolu_at,
         ]);
