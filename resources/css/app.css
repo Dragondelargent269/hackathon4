@@ -2,6 +2,7 @@
 @import '../../vendor/livewire/flux/dist/flux.css';
 
 @source '../views';
+@source '../../config/cleancomores.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
 @source '../../vendor/livewire/flux/stubs/**/*.blade.php';
@@ -64,3 +65,46 @@ select:focus[data-flux-control] {
 /* \[:where(&)\]:size-4 {
     @apply size-4;
 } */
+
+/* ---------------------------------------------------------------
+   CleanComores
+---------------------------------------------------------------- */
+@theme {
+    --color-lagon-50: #ecfdf8;
+    --color-lagon-100: #d1faee;
+    --color-lagon-200: #a6f2dd;
+    --color-lagon-300: #6ce5c8;
+    --color-lagon-500: #0fb592;
+    --color-lagon-600: #079477;
+    --color-lagon-700: #0a7661;
+    --color-lagon-800: #0d5e4f;
+    --color-lagon-900: #0e4d42;
+    --color-lagon-950: #022c26;
+    --color-sable-50: #fbfaf7;
+    --color-sable-100: #f4f1ea;
+    --color-sable-200: #e7e1d4;
+}
+
+.cc-body { @apply bg-sable-50 text-zinc-900 antialiased; }
+
+/* Cible tactile minimale 44 px */
+.cc-touch { @apply min-h-11 min-w-11; }
+
+/* Focus visible et cohérent */
+.cc-body :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    @apply outline-2 outline-offset-2 outline-lagon-600;
+}
+
+.cc-input {
+    @apply block w-full min-h-11 rounded-lg border border-zinc-300 bg-white px-3 py-2 text-base text-zinc-900 shadow-xs placeholder:text-zinc-400 focus:border-lagon-600 focus:ring-2 focus:ring-lagon-600/30 focus:outline-none;
+}
+.cc-input[aria-invalid='true'] { @apply border-red-600 ring-2 ring-red-600/20; }
+
+dialog.cc-dialog::backdrop { background: rgb(9 9 11 / 0.55); }
+
+/* Étapes du formulaire : sans JS tout est visible, avec JS une étape à la fois */
+.js [data-etape][hidden] { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+}
