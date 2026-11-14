@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\Categorie;
-use App\Enums\Priorite;
 use App\Enums\StatutSignalement;
 use DomainException;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -11,7 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\DB;
-
 
 class Signalement extends Model
 {
@@ -40,12 +37,13 @@ class Signalement extends Model
         'photo_resolution',
     ];
 
+    /**
+     * categorie, statut et priorite restent du TEXTE (contrat FRONTEND.md).
+     * Les Enums servent à valider et à appliquer les règles métier.
+     */
     protected function casts(): array
     {
         return [
-            'categorie' => Categorie::class,
-            'statut' => StatutSignalement::class,
-            'priorite' => Priorite::class,
             'latitude' => 'decimal:7',
             'longitude' => 'decimal:7',
             'affecte_at' => 'datetime',
@@ -65,7 +63,7 @@ class Signalement extends Model
 
             $signalement->historique()->create([
                 'user_id' => $signalement->user_id,
-                'statut' => StatutSignalement::Nouveau,
+                'statut' => StatutSignalement::Nouveau->value,
             ]);
         });
     }
@@ -93,14 +91,14 @@ class Signalement extends Model
     // Attributs calculés attendus par les vues
     // ---------------------------------------------------------------
 
-        protected function photoUrl(): Attribute
+    protected function photoUrl(): Attribute
     {
         return Attribute::get(fn () => $this->photo
             ? asset('storage/'.$this->photo)
             : null);
     }
 
-      protected function compteRendu(): Attribute
+    protected function compteRendu(): Attribute
     {
         return Attribute::get(fn (?string $value) => $value === null ? null : (object) [
             'texte' => $value,
@@ -117,14 +115,16 @@ class Signalement extends Model
 
     public function changerStatut(StatutSignalement $nouveau, ?User $par = null, ?string $commentaire = null): void
     {
-        if (! $this->statut->peutPasserA($nouveau)) {
+        $actuel = StatutSignalement::from($this->statut);
+
+        if (! $actuel->peutPasserA($nouveau)) {
             throw new DomainException(
-                "Transition interdite : {$this->statut->getLabel()} → {$nouveau->getLabel()}."
+                "Transition interdite : {$actuel->getLabel()} → {$nouveau->getLabel()}."
             );
         }
 
         DB::transaction(function () use ($nouveau, $par, $commentaire) {
-            $this->statut = $nouveau;
+            $this->statut = $nouveau->value;
 
             if ($nouveau === StatutSignalement::Affecte) {
                 $this->affecte_at = now();
@@ -138,7 +138,7 @@ class Signalement extends Model
 
             $this->historique()->create([
                 'user_id' => $par?->id,
-                'statut' => $nouveau,
+                'statut' => $nouveau->value,
                 'commentaire' => $commentaire,
             ]);
         });

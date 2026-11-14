@@ -83,7 +83,7 @@ class SignalementController extends Controller
             $signalement->changerStatut(
                 StatutSignalement::Valide,
                 $request->user(),
-                'Priorité définie : '.$signalement->priorite->getLabel().'.'
+                                'Priorité définie : '.Priorite::from($donnees['priorite'])->getLabel().'.'
             );
         }, 'Signalement validé, priorité enregistrée.');
     }

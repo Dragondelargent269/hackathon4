@@ -7,14 +7,19 @@
 --}}
 @props(['points' => [], 'selection' => false, 'hauteur' => 'h-72', 'label' => 'Carte des signalements'])
 @php
-    $points = collect($points)->map(fn ($p) => [
-        'lat' => (float) data_get($p, 'lat'),
-        'lng' => (float) data_get($p, 'lng'),
-        'titre' => data_get($p, 'titre'),
-        'statut' => data_get($p, 'statut'),
-        'statutLabel' => config('cleancomores.statuts.'.data_get($p, 'statut').'.label'),
-        'url' => data_get($p, 'url'),
-    ])->values();
+    $points = collect($points)->map(function ($p) {
+        $statut = data_get($p, 'statut');
+        $statut = $statut instanceof \BackedEnum ? $statut->value : $statut;
+
+        return [
+            'lat' => (float) data_get($p, 'lat'),
+            'lng' => (float) data_get($p, 'lng'),
+            'titre' => data_get($p, 'titre'),
+            'statut' => $statut,
+            'statutLabel' => config('cleancomores.statuts.'.$statut.'.label'),
+            'url' => data_get($p, 'url'),
+        ];
+    })->values();
 @endphp
 <div {{ $attributes->merge(['class' => 'relative overflow-hidden rounded-xl border border-zinc-200 bg-lagon-50']) }}>
     <div

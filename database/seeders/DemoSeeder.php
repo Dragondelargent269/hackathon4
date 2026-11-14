@@ -6,6 +6,7 @@ use App\Enums\StatutSignalement;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
+use App\Enums\Priorite;
 
 class DemoSeeder extends Seeder
 {
@@ -52,8 +53,13 @@ class DemoSeeder extends Seeder
             Carbon::setTestNow(now()->subDays($jours)->subHours($decalage));
 
             $s = $citoyens[$cit]->signalements()->create([
-                'categorie' => $cat, 'description' => $desc, 'commune' => $commune, 'zone' => $zone,
-                'repere' => $repere, 'latitude' => $lat, 'longitude' => $lng,
+                'categorie' => $cat,
+                'description' => $desc,
+                'commune' => $commune,
+                'zone' => $zone,
+                'repere' => $repere,
+                'latitude' => $lat,
+                'longitude' => $lng,
             ]);
 
             $etapes = $cible === 'rejete'
@@ -71,7 +77,7 @@ class DemoSeeder extends Seeder
                 switch ($etape) {
                     case 'valide':
                         $s->priorite = $prio;
-                        $commentaire = 'Priorité définie : '.$s->priorite->getLabel().'.';
+                        $commentaire = 'Priorité définie : ' . Priorite::from($prio)->getLabel() . '.';
                         break;
                     case 'affecte':
                         $s->agent_id = $agent->id;
