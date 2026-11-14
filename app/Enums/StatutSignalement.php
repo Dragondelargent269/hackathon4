@@ -53,7 +53,7 @@ enum StatutSignalement: string implements HasLabel, HasColor
             self::Nouveau => [self::AVerifier, self::Valide, self::Rejete],
             self::AVerifier => [self::Valide, self::Rejete],
             self::Valide => [self::Affecte],
-            self::Affecte => [self::EnCours],
+                        self::Affecte => [self::EnCours, self::Affecte],
             self::EnCours => [self::Resolu],
             self::Resolu => [self::Verifie, self::EnCours],
             self::Verifie, self::Rejete => [],

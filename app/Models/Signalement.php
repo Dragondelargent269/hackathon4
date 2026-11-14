@@ -1,48 +1,46 @@
 <?php
 
 namespace App\Models;
+
 use App\Enums\Categorie;
 use App\Enums\Priorite;
 use App\Enums\StatutSignalement;
-
+use DomainException;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class Signalement extends Model
 {
-    /**
-     * Valeurs par défaut d'un nouvel objet, avant même d'être enregistré.
-     */
     protected $attributes = [
         'statut' => 'nouveau',
     ];
 
     /**
-     * Colonnes qu'on autorise à remplir "en masse" avec create([...]) ou fill([...]).
+     * statut, affecte_at et resolu_at ne sont PAS ici :
+     * ils ne changent QUE via changerStatut().
      */
     protected $fillable = [
         'categorie',
         'description',
         'commune',
-        'quartier',
+        'zone',
+        'repere',
         'latitude',
         'longitude',
         'photo',
-        'statut',
         'priorite',
         'agent_id',
-        'consigne',
+        'consignes',
         'motif_rejet',
         'compte_rendu',
         'photo_resolution',
-        'affecte_at',
-        'resolu_at',
     ];
 
-    /**
-     * Conversion automatique des types entre MySQL et PHP.
-     */
-        protected function casts(): array
+    protected function casts(): array
     {
         return [
             'categorie' => Categorie::class,
@@ -55,30 +53,94 @@ class Signalement extends Model
         ];
     }
 
-    /**
-     * Code exécuté automatiquement à certains moments de la vie du modèle.
-     */
     protected static function booted(): void
     {
         static::created(function (Signalement $signalement) {
-            $signalement->reference = 'CC-' . str_pad($signalement->id, 4, '0', STR_PAD_LEFT);
+            $signalement->reference = sprintf(
+                'CC-%s-%04d',
+                $signalement->created_at->format('Y'),
+                $signalement->id
+            );
             $signalement->saveQuietly();
+
+            $signalement->historique()->create([
+                'user_id' => $signalement->user_id,
+                'statut' => StatutSignalement::Nouveau,
+            ]);
         });
     }
 
-    /**
-     * Le citoyen qui a créé le signalement.
-     */
-    public function auteur(): BelongsTo
+    // ---------------------------------------------------------------
+    // Relations
+    // ---------------------------------------------------------------
+
+    public function citoyen(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
-    /**
-     * L'agent de terrain affecté au signalement.
-     */
     public function agent(): BelongsTo
     {
         return $this->belongsTo(User::class, 'agent_id');
+    }
+
+    public function historique(): HasMany
+    {
+        return $this->hasMany(HistoriqueSignalement::class)->oldest()->oldest('id');
+    }
+
+    // ---------------------------------------------------------------
+    // Attributs calculés attendus par les vues
+    // ---------------------------------------------------------------
+
+    protected function photoUrl(): Attribute
+    {
+        return Attribute::get(fn () => $this->photo
+            ? Storage::disk('public')->url($this->photo)
+            : null);
+    }
+
+    protected function compteRendu(): Attribute
+    {
+        return Attribute::get(fn (?string $value) => $value === null ? null : (object) [
+            'texte' => $value,
+            'photo_url' => $this->photo_resolution
+                ? Storage::disk('public')->url($this->photo_resolution)
+                : null,
+            'created_at' => $this->resolu_at,
+        ]);
+    }
+
+    // ---------------------------------------------------------------
+    // Logique métier : SEUL point d'entrée pour changer un statut
+    // ---------------------------------------------------------------
+
+    public function changerStatut(StatutSignalement $nouveau, ?User $par = null, ?string $commentaire = null): void
+    {
+        if (! $this->statut->peutPasserA($nouveau)) {
+            throw new DomainException(
+                "Transition interdite : {$this->statut->getLabel()} → {$nouveau->getLabel()}."
+            );
+        }
+
+        DB::transaction(function () use ($nouveau, $par, $commentaire) {
+            $this->statut = $nouveau;
+
+            if ($nouveau === StatutSignalement::Affecte) {
+                $this->affecte_at = now();
+            }
+
+            if ($nouveau === StatutSignalement::Resolu) {
+                $this->resolu_at = now();
+            }
+
+            $this->save();
+
+            $this->historique()->create([
+                'user_id' => $par?->id,
+                'statut' => $nouveau,
+                'commentaire' => $commentaire,
+            ]);
+        });
     }
 }
